@@ -1,0 +1,146 @@
+apply plugin: "com.android.application"
+apply plugin: "com.neenbedankt.android-apt"
+apply plugin: "me.tatarka.retrolambda"
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.2"
+
+    defaultConfig {
+        applicationId "com.whitecloak.androidboilerplate"
+
+        minSdkVersion 15
+        targetSdkVersion 24
+
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        versionCode 1000000
+        // Major -> Millions, Minor -> Thousands, Bugfix -> Hundreds. E.g 1.3.72 == 1,003,072
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("keystore/release.keystore")
+            keyAlias "androidreleasekey"
+            storePassword "$System.env.APP_KEY"
+            keyPassword "$System.env.APP_KEY"
+        }
+
+        debug {
+            storeFile file("keystore/debug.keystore")
+            keyAlias "androiddebugkey"
+            storePassword "android"
+            keyPassword "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+
+            signingConfig signingConfigs.release
+
+            // Rename release file to app-versionname.apk
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def file = output.outputFile
+                    if (variant.buildType.name == "release") {
+                        def name = "release-${defaultConfig.versionName}.apk"
+                        //noinspection GroovyAssignabilityCheck
+                        output.outputFile = new File(file.parent, name)
+                    }
+                }
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    maven { url "https://jitpack.io" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
+dependencies {
+    compile fileTree(dir: "libs", include: ["*.jar"])
+
+    final SUPPORT_VERSION = "24.2.1"
+    final BUTTERKNIFE_VERSION = "8.4.0"
+    final DAGGER_VERSION = "2.7"
+    final AUTOVALUE_VERISON = "1.3"
+    final RXJAVA_VERSION = "1.2.0"
+    final RXBINDING_VERSION = "0.4.1-SNAPSHOT"
+    final RXLIFECYCLE_VERSION = "0.7.0"
+
+    def autoValue = "com.google.auto.value:auto-value:$AUTOVALUE_VERISON"
+    def daggerCompiler = "com.google.dagger:dagger-compiler:$DAGGER_VERSION"
+
+    provided "javax.annotation:jsr250-api:1.0"
+    provided autoValue
+
+    apt "com.jakewharton:butterknife-compiler:$BUTTERKNIFE_VERSION"
+    apt autoValue
+    apt daggerCompiler
+
+    compile "com.google.code.findbugs:jsr305:2.0.1"
+
+    compile "com.android.support:appcompat-v7:$SUPPORT_VERSION"
+    compile "com.android.support:support-v4:$SUPPORT_VERSION"
+    compile "com.android.support:design:$SUPPORT_VERSION"
+
+    compile "com.google.dagger:dagger:$DAGGER_VERSION"
+    compile "com.jakewharton:butterknife:$BUTTERKNIFE_VERSION"
+
+    compile "io.reactivex:rxjava:$RXJAVA_VERSION"
+
+    compile "com.trello:rxlifecycle:$RXLIFECYCLE_VERSION"
+    compile "com.trello:rxlifecycle-android:$RXLIFECYCLE_VERSION"
+    compile "com.trello:rxlifecycle-components:$RXLIFECYCLE_VERSION"
+    compile "com.trello:rxlifecycle-navi:$RXLIFECYCLE_VERSION"
+
+    compile "com.jakewharton.rxbinding:rxbinding:$RXBINDING_VERSION"
+    compile "com.jakewharton.rxbinding:rxbinding-design:$RXBINDING_VERSION"
+    compile "com.jakewharton.rxbinding:rxbinding-support-v4:$RXBINDING_VERSION"
+    compile "com.jakewharton.rxbinding:rxbinding-appcompat-v7:$RXBINDING_VERSION"
+    compile "com.jakewharton.rxbinding:rxbinding-recyclerview-v7:$RXBINDING_VERSION"
+
+    compile("com.mikepenz:materialdrawer:5.6.0@aar") {
+        transitive = true
+    }
+
+    compile("com.mikepenz:fastadapter:1.8.2@aar") {
+        transitive = true
+    }
+
+    // Utils
+    compile "com.jakewharton.timber:timber:4.3.0"
+    compile "com.squareup.picasso:picasso:2.5.2"
+
+    compile "com.mikepenz:iconics-core:2.8.1@aar"
+    compile "com.mikepenz:google-material-typeface:2.2.0.3.original@aar"
+
+    testCompile "junit:junit:4.12"
+
+    androidTestCompile("com.android.support.test.espresso:espresso-core:2.2.2", {
+        exclude group: "com.android.support", module: "support-annotations"
+    })
+}
+
+configurations.all {
+    resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
+}
+
+// Log out test results to console
+tasks.matching { it instanceof Test }.all {
+    testLogging.events = ["failed", "passed", "skipped"]
+}
