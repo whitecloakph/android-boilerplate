@@ -1,3 +1,5 @@
+NOTE: Not yet completed
+
 # Android Boilerplate
 
 Sample Android app that we use at [White Cloak](http://www.whitecloak.com) as a reference for new Android projects. It demonstrates the architecture, tools and guidelines that we use when developing for the Android platform.
